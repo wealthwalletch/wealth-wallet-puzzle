@@ -1,0 +1,593 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta property="og:title" content="Wealth Wallet Puzzle - Can You Solve It?">
+    <meta property="og:description" content="Solve the interactive puzzle to discover the complete Wealth Wallet approach to financial planning.">
+    <meta property="og:image" content="https://wealthwallet.ch/wp-content/uploads/2024/12/wwlogo-final-new-1.png">
+    <title>Wealth Wallet Puzzle - Interactive Financial Planning</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: linear-gradient(to bottom right, #f1f5f9, #cbd5e1);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        
+        .container {
+            background: white;
+            border-radius: 24px;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+            padding: 32px;
+            max-width: 800px;
+            width: 100%;
+        }
+        
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 32px;
+            flex-wrap: wrap;
+            gap: 16px;
+        }
+        
+        h1 {
+            font-size: 32px;
+            font-weight: bold;
+            background: linear-gradient(to right, #2563eb, #1e3a8a);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        
+        .shuffle-btn {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 10px 20px;
+            background: linear-gradient(to right, #3b82f6, #2563eb);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+            transition: all 0.2s;
+        }
+        
+        .shuffle-btn:hover {
+            background: linear-gradient(to right, #2563eb, #1e40af);
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+            transform: translateY(-2px);
+        }
+        
+        .win-message {
+            display: none;
+            align-items: center;
+            gap: 12px;
+            padding: 16px;
+            background: linear-gradient(to right, #f0fdf4, #dcfce7);
+            border: 2px solid #4ade80;
+            border-radius: 12px;
+            margin-bottom: 24px;
+        }
+        
+        .win-message.show {
+            display: flex;
+            animation: pulse 1s ease-in-out infinite;
+        }
+        
+        .win-icon {
+            width: 32px;
+            height: 32px;
+            color: #16a34a;
+        }
+        
+        .win-text {
+            font-size: 20px;
+            font-weight: bold;
+            color: #166534;
+        }
+        
+        .puzzle-wrapper {
+            position: relative;
+            background: white;
+            border-radius: 16px;
+            padding: 24px;
+            box-shadow: inset 0 2px 4px 0 rgba(0, 0, 0, 0.06);
+            margin: 0 auto;
+            max-width: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 320px;
+        }
+        
+        .puzzle-area {
+            position: relative;
+            width: 520px;
+            height: 280px;
+            margin: 0 auto;
+        }
+        
+        .puzzle-piece {
+            transition: transform 0.2s ease;
+            cursor: move;
+            touch-action: none;
+        }
+        
+        .puzzle-piece:hover {
+            transform: scale(1.05);
+        }
+        
+        .puzzle-piece:active {
+            opacity: 0.7;
+        }
+        
+        .slot {
+            position: absolute;
+            width: 130px;
+            height: 130px;
+        }
+        
+        .piece-content {
+            position: absolute;
+            left: 0;
+            top: 0;
+        }
+        
+        .icon-container {
+            position: absolute;
+            left: 15px;
+            top: 15px;
+            width: 100px;
+            height: 100px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            pointer-events: none;
+        }
+        
+        .icon-svg {
+            width: 32px;
+            height: 32px;
+            filter: drop-shadow(0 2px 4px rgba(0,0,0,0.3));
+        }
+        
+        .icon-label {
+            color: white;
+            font-size: 12px;
+            font-weight: bold;
+            text-align: center;
+            margin-top: 8px;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.5);
+            padding: 0 8px;
+        }
+        
+        .logo-reveal {
+            position: absolute;
+            inset: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            pointer-events: none;
+            opacity: 0;
+            padding: 24px;
+        }
+        
+        .logo-reveal img {
+            max-width: 80%;
+            max-height: 80%;
+            object-fit: contain;
+        }
+        
+        .fade-out {
+            animation: fadeOut 1s ease-out forwards;
+        }
+        
+        .fade-in {
+            animation: fadeIn 1s ease-in 0.5s forwards;
+        }
+        
+        @keyframes fadeOut {
+            from { opacity: 1; }
+            to { opacity: 0; }
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.8; }
+        }
+        
+        .instruction {
+            text-align: center;
+            color: #64748b;
+            font-size: 14px;
+            margin-top: 24px;
+        }
+        
+        .footer {
+            text-align: center;
+            margin-top: 24px;
+        }
+        
+        .footer-text {
+            color: #64748b;
+            font-size: 14px;
+            margin-bottom: 8px;
+        }
+        
+        .footer-link {
+            color: #2563eb;
+            text-decoration: none;
+            font-weight: 600;
+        }
+        
+        .footer-link:hover {
+            color: #1e40af;
+        }
+        
+        @media (max-width: 640px) {
+            .container {
+                padding: 16px;
+            }
+            
+            h1 {
+                font-size: 24px;
+            }
+            
+            .header {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+            
+            .shuffle-btn {
+                width: 100%;
+                justify-content: center;
+            }
+            
+            .puzzle-wrapper {
+                padding: 16px;
+                min-height: 580px;
+            }
+            
+            .puzzle-area {
+                width: 280px;
+                height: 520px;
+            }
+            
+            .instruction {
+                font-size: 13px;
+            }
+            
+            .footer-text {
+                font-size: 13px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Wealth Wallet Puzzle</h1>
+            <button id="shuffleBtn" class="shuffle-btn">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M16 3h5v5M4 20L21 3M21 16v5h-5M15 15l6 6M4 4l5 5"/>
+                </svg>
+                Shuffle
+            </button>
+        </div>
+
+        <div id="winMessage" class="win-message">
+            <svg class="win-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6M18 9h1.5a2.5 2.5 0 0 0 0-5H18M4 22h16M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22"/>
+                <path d="M18 2H6v7a6 6 0 0 0 12 0V2Z"/>
+            </svg>
+            <span class="win-text">Puzzle Complete! 🎉</span>
+        </div>
+
+        <div class="puzzle-wrapper">
+            <div id="puzzleArea" class="puzzle-area"></div>
+            
+            <div id="logoReveal" class="logo-reveal">
+                <svg xmlns="http://www.w3.org/2000/svg" width="360" height="200" viewBox="0 0 90 50" fill="none" style="max-width: 100%; height: auto;">
+                  <path d="M3.22194 13.2767C3.20616 12.4574 3.54425 12.2123 4.32016 12.232C5.04367 12.2501 5.60321 12.2715 5.57898 13.2412C5.54517 14.5913 5.54911 18.2528 5.55587 20.6871C6.90428 21.4759 8.42737 21.9972 10.0603 22.1566C10.0643 20.975 10.0632 19.8745 10.0378 18.4168C10.0215 17.4927 10.3984 17.2436 11.2656 17.2335C12.1847 17.2233 12.4698 17.5885 12.4489 18.463C12.4117 20.0284 12.4129 20.7541 12.4348 22.1318C14.0385 21.9476 15.5329 21.4168 16.8542 20.624C16.8655 17.7237 16.8661 13.093 16.8311 11.7469C16.808 10.8712 17.0864 10.5168 18.0077 10.5275C18.8642 10.5376 19.2732 10.7422 19.2473 11.6843C19.2169 12.7803 19.2332 15.9679 19.2411 18.7008C21.1074 16.7134 22.2591 14.047 22.2591 11.1056C22.2591 4.97215 17.287 0 11.1535 0C5.02 0 0.0478516 4.97215 0.0478516 11.1056C0.0478516 14.131 1.26046 16.8706 3.2225 18.8732C3.2287 16.6999 3.24391 14.3473 3.22194 13.2767Z" fill="#112C84"/>
+                  <path d="M5.55578 20.6866C5.54845 18.2523 5.54507 14.5914 5.57888 13.2407C5.60311 12.271 5.04357 12.2496 4.32006 12.2316C3.54415 12.2118 3.20606 12.4569 3.22184 13.2762C3.24325 14.3469 3.22804 16.6994 3.2224 18.8733C3.91267 19.5777 4.69872 20.1851 5.55578 20.6866Z" fill="white"/>
+                  <path d="M19.2477 11.6839C19.2736 10.7418 18.8645 10.5372 18.008 10.5271C17.0867 10.5164 16.8083 10.8708 16.8314 11.7465C16.8664 13.0926 16.8658 17.7233 16.8546 20.6235C17.7375 20.0933 18.5399 19.447 19.2415 18.7004C19.2336 15.9675 19.2172 12.7799 19.2477 11.6839Z" fill="white"/>
+                  <path d="M12.4492 18.4631C12.47 17.5886 12.1849 17.2235 11.2659 17.2336C10.3987 17.2437 10.0217 17.4928 10.038 18.4169C10.0634 19.8746 10.0645 20.9751 10.0606 22.1567C10.4206 22.1917 10.7847 22.212 11.1537 22.212C11.5876 22.212 12.0142 22.1804 12.4351 22.1319C12.4131 20.7542 12.412 20.0285 12.4492 18.4631Z" fill="white"/>
+                  <path d="M14.1806 6.05121L15.4157 7.27903L11.3124 11.3964L4.52024 4.59912L0.209051 8.91369C0.0749429 9.60339 0 10.3139 0 11.0431C0 11.1682 0.0146505 11.2893 0.0185949 11.4133L4.52024 6.90883L11.3141 13.7078L14.5406 10.47L16.5737 8.42966L17.815 9.66368L19.1228 4.70844L14.1806 6.05121Z" fill="#24A6E8"/>
+                  <path d="M10.0537 47.0604C9.56124 47.0604 8.80505 47.07 8.04886 47.0604C6.26432 47.0339 5.56955 46.3279 5.56278 44.514C5.55489 42.7503 5.53517 40.9861 5.57912 39.2235C5.60335 38.2537 5.04382 38.2323 4.32031 38.2143C3.5444 38.1946 3.20631 38.4397 3.22209 39.259C3.2604 41.1365 3.18433 43.0174 3.24575 44.8938C3.319 47.368 5.32443 49.3481 7.7998 49.3887C10.0374 49.4191 12.2761 49.4191 14.5148 49.3887C17.4545 49.352 19.1607 47.6864 19.2311 44.7625C19.2745 42.9594 19.1979 41.1562 19.248 39.3576C19.274 38.4155 18.8649 38.2109 18.0084 38.2008C17.0871 38.1901 16.8087 38.5445 16.8318 39.4201C16.8775 41.1827 16.8628 42.947 16.8414 44.7107C16.8223 46.3042 16.1044 47.0463 14.6472 47.0452C13.1901 47.044 12.4727 46.3183 12.4446 44.7191C12.4141 42.956 12.4079 40.573 12.4496 38.811C12.4705 37.9365 12.1854 37.5714 11.2663 37.5815C10.3991 37.5916 10.0222 37.8407 10.0385 38.7648C10.0825 41.2779 10.0537 44.4109 10.0537 47.0592" fill="#112C84"/>
+                  <path d="M64.7118 44.9798C67.2131 44.9798 69.6563 44.9482 72.0985 44.9961C73.0113 45.0136 73.3792 44.7707 73.3945 43.7835C73.4102 42.7219 72.907 42.612 72.0573 42.6222C69.1864 42.6543 66.3154 42.6543 63.444 42.6222C62.548 42.6109 62.1339 42.8408 62.2229 43.9182C62.3266 45.3331 62.3266 46.7542 62.2229 48.1691C62.1598 49.1833 62.5666 49.4239 63.4496 49.4161C67.0857 49.3828 70.7219 49.38 74.3591 49.407C75.1598 49.4121 75.6551 49.3067 75.6585 48.3077C75.6585 47.3272 75.312 47.019 74.3112 47.0517C72.2337 47.121 70.1516 47.1909 68.0746 47.0934C64.4413 46.9243 64.3219 47.5864 64.7095 44.9809" fill="#112C84"/>
+                  <path d="M19.7036 49.1118C21.6814 49.6972 22.131 49.5276 22.8906 48.0592C24.0688 45.7799 25.2245 43.4894 26.4298 41.2248C26.6253 40.8585 27.0722 40.3181 27.3201 40.3598C27.7568 40.5193 28.1203 40.8326 28.3423 41.2411C28.7564 41.8801 29.0568 42.5935 29.4073 43.2747C30.3178 45.0446 31.2301 46.8145 32.1435 48.5838C32.5098 49.2887 34.0593 49.815 34.5665 49.2729C34.7919 49.0352 34.5586 48.1978 34.3298 47.7335C33.058 45.1595 31.7046 42.6261 30.4164 40.06C29.7865 38.8035 28.8996 37.9081 27.4396 37.8833C25.9249 37.8585 24.9879 38.7516 24.35 40.0612C23.6637 41.4699 22.9238 42.856 22.2054 44.2518C21.3895 45.838 20.5713 47.4236 19.7036 49.1107" fill="#112C84"/>
+                  <path d="M81.9394 40.5812C81.9698 41.0957 82.0092 41.4676 82.0104 41.8394C82.0188 44.0117 82.0346 46.1839 82.0104 48.3561C82.0058 48.9235 82.4533 49.3918 83.0207 49.4126C83.9786 49.4532 84.4688 49.194 84.3561 48.1358C84.3184 47.4861 84.3155 46.8353 84.3465 46.185V40.5767C85.9175 40.5767 87.324 40.5327 88.7265 40.5925C89.6348 40.6308 89.9205 40.2938 89.9216 39.4001C89.9216 38.3707 89.5362 38.1205 88.2841 38.2309C84.9281 38.5115 81.5539 38.5104 78.1978 38.227C76.9047 38.1233 76.4341 38.307 76.4156 39.4311C76.3987 40.4927 76.9227 40.6144 77.7679 40.5913C79.1321 40.5519 80.4985 40.5806 81.9377 40.5806" fill="#112C84"/>
+                  <path d="M56.4014 49.3811V49.3935C57.4348 49.3935 58.4683 49.3761 59.5006 49.3997C60.3131 49.4183 60.956 49.4623 60.9887 48.2666C61.0248 46.9818 60.3069 47.0517 59.4645 47.0562C57.4737 47.0681 55.4824 47.0681 53.4916 47.0562C51.8428 47.045 51.3588 46.5682 51.3453 44.9432C51.329 43.0273 51.3109 41.1115 51.3453 39.1991C51.3605 38.3178 50.8866 38.2085 50.1811 38.2203C49.5207 38.2321 48.9567 38.2203 48.9719 39.1455C49.0057 41.2867 48.9342 43.4364 49.0069 45.5788C49.0153 47.6828 50.7283 49.3811 52.8323 49.3727H52.8385C54.0218 49.4223 55.2108 49.3817 56.3969 49.3817" fill="#112C84"/>
+                  <path d="M43.0046 49.3886V49.3965C44.1519 49.3965 45.3014 49.3587 46.4464 49.4089C47.326 49.4477 47.6595 49.1559 47.6612 48.2289C47.6629 47.302 47.3029 47.0344 46.4407 47.0456C44.2995 47.0789 42.1583 47.071 40.0171 47.0456C38.5317 47.0293 38.0336 46.5205 38.0144 45.0171C37.9902 43.1013 37.9767 41.1854 38.0088 39.2696C38.0246 38.6971 37.5738 38.2198 37.0008 38.2035C36.9771 38.2029 36.9529 38.2029 36.9286 38.2041C36.2198 38.2272 35.6377 38.2311 35.6546 39.2031C35.6907 41.3077 35.6174 43.4157 35.6845 45.518C35.7493 47.6159 37.4301 49.3041 39.5274 49.3779C40.6848 49.4241 41.8456 49.3869 43.0046 49.3869" fill="#112C84"/>
+                  <path d="M68.9512 40.5817V40.576C70.7904 40.576 72.6296 40.5405 74.4671 40.5912C75.3895 40.616 75.6504 40.2436 75.6561 39.3679C75.6651 38.4326 75.2796 38.1981 74.4164 38.2066C70.7769 38.241 67.1379 38.241 63.499 38.2066C62.5833 38.1965 62.1945 38.4404 62.203 39.4282C62.2103 40.3602 62.5664 40.6177 63.4364 40.5958C65.2739 40.5501 67.1131 40.5817 68.9523 40.5817" fill="#112C84"/>
+                  <path d="M28.01 25.2153C26.1319 25.2153 24.2522 25.1792 22.3752 25.2299C21.428 25.2553 21.2144 24.8355 21.2173 23.9807C21.2173 23.1428 21.499 22.8312 22.3544 22.8385C26.1111 22.8695 29.8672 22.8678 33.624 22.8329C34.5329 22.8244 34.7064 23.2448 34.7053 24.0297C34.7053 24.8006 34.5757 25.257 33.6448 25.2311C31.7679 25.1787 29.8881 25.2153 28.01 25.2153Z" fill="#24A6E8"/>
+                  <path d="M87.6395 29.6355C84.8131 29.6355 82.2053 29.6152 79.5997 29.6699C79.362 29.6749 78.9619 30.1466 78.9343 30.43C78.861 31.3502 78.8492 32.2743 78.8988 33.1961C78.9303 34.0774 78.364 34.0707 77.7532 34.06C77.1661 34.0487 76.5648 34.1107 76.5699 33.2249C76.5823 30.0728 76.5874 26.9207 76.566 23.7685C76.5598 22.8427 77.1294 22.8489 77.791 22.8467C78.4367 22.8467 78.9331 22.9115 78.9067 23.7522C78.8729 24.86 78.8982 25.9695 78.8982 27.1787H87.6429C87.6429 26.0726 87.6727 24.9738 87.6333 23.8779C87.6034 23.0484 87.9815 22.823 88.7501 22.8416C89.4792 22.8591 90.0129 22.889 89.9999 23.8593C89.9599 26.9342 89.9576 30.0091 89.9926 33.0846C90.0027 33.9811 89.5367 34.0808 88.8329 34.0684C88.1647 34.056 87.5995 34.034 87.631 33.1178C87.6694 32.014 87.6401 30.9073 87.6401 29.6372" fill="#24A6E8"/>
+                  <path d="M27.9445 34.0564C26.0631 34.0564 24.1805 34.0418 22.299 34.0643C21.5986 34.0722 21.2188 33.8564 21.2284 33.0844C21.2538 31.4712 21.2515 29.8563 21.2284 28.2419C21.22 27.5657 21.4808 27.2716 22.1773 27.2744C25.2877 27.2913 28.3993 27.3003 31.5097 27.2682C32.4332 27.2586 32.4597 27.8131 32.4676 28.4718C32.4755 29.1592 32.3729 29.6551 31.4759 29.6382C29.2107 29.5976 26.9438 29.6517 24.6786 29.6179C23.9297 29.6066 23.5584 29.77 23.5595 30.6215C23.5595 31.4864 23.8813 31.74 24.7203 31.7281C27.6002 31.6881 30.4808 31.7332 33.3613 31.7056C34.2234 31.6971 34.7136 31.8493 34.7046 32.8962C34.6939 33.9257 34.2352 34.1026 33.3523 34.0795C31.5491 34.0316 29.7426 34.0655 27.9372 34.0655V34.0559" fill="#24A6E8"/>
+                  <path d="M35.3196 33.8049C36.0279 32.4469 36.6776 31.2062 37.3217 29.9614C38.2745 28.1205 39.224 26.278 40.1706 24.4337C40.6654 23.2661 41.8098 22.5071 43.0776 22.5049C44.3077 22.5032 45.4223 23.2295 45.9181 24.3554C47.4159 27.2111 48.8714 30.0888 50.3696 32.9428C50.7917 33.7463 50.6159 34.0292 49.7115 34.0743C48.8308 34.2377 47.9585 33.7497 47.6368 32.9135C46.5053 30.521 45.2572 28.1803 44.0175 25.8429C43.8192 25.4694 43.3628 24.9048 43.1295 24.951C42.6866 25.111 42.3226 25.4367 42.1152 25.8599C40.9139 28.0907 39.7689 30.3519 38.6087 32.6041C37.7719 34.2292 37.4851 34.3549 35.3202 33.8027" fill="#24A6E8"/>
+                  <path d="M69.5096 25.2134V30.4746C69.5096 31.3199 69.4662 32.169 69.5181 33.0103C69.5744 33.9462 69.0673 34.0601 68.3049 34.0685C67.4822 34.0775 67.1312 33.8228 67.1486 32.9444C67.192 30.7158 67.1334 28.4844 67.1689 26.2553C67.1824 25.4529 66.903 25.1689 66.1028 25.2033C64.9139 25.2546 63.7204 25.1864 62.5309 25.2191C61.6344 25.2438 61.5634 24.7153 61.5662 24.0245C61.5696 23.3432 61.6074 22.8305 62.5242 22.8372C66.4043 22.8682 70.2844 22.8699 74.1645 22.8412C75.0723 22.8344 75.1326 23.3534 75.136 24.0318C75.1394 24.7102 75.0577 25.245 74.1606 25.2224C72.6685 25.1852 71.1741 25.2123 69.5113 25.2123" fill="#24A6E8"/>
+                  <path d="M58.7305 34.0603C57.6165 34.0603 56.5019 34.0902 55.3891 34.0541C53.0044 33.9769 51.4909 32.526 51.416 30.156C51.3489 28.044 51.416 25.9299 51.3833 23.8151C51.3681 22.9248 51.8656 22.833 52.5632 22.8386C53.2608 22.8442 53.7634 22.9231 53.7465 23.8174C53.7121 25.7766 53.7279 27.7375 53.7409 29.6973C53.751 31.1888 54.2559 31.6926 55.7621 31.7044C57.9129 31.7208 60.0643 31.7388 62.2145 31.7044C63.098 31.6903 63.4271 31.9963 63.4277 32.9086C63.4277 33.8473 63.0496 34.1099 62.1852 34.0727C61.0351 34.0231 59.8811 34.0603 58.7288 34.0603" fill="#24A6E8"/>
+                  <path d="M10.0537 31.7643C9.56118 31.7643 8.80499 31.7739 8.0488 31.7643C6.26426 31.7378 5.56948 31.0318 5.56272 29.2179C5.55483 27.4542 5.53511 25.69 5.57906 23.9274C5.60329 22.9577 5.04376 22.9363 4.32025 22.9182C3.54434 22.8985 3.20625 23.1436 3.22202 23.9629C3.26034 25.8404 3.18427 27.7213 3.24569 29.5977C3.31894 32.072 5.32437 34.0509 7.79918 34.092C10.0368 34.1225 12.2755 34.1225 14.5142 34.092C17.4539 34.0554 19.1601 32.3898 19.2305 29.4659C19.2739 27.6627 19.1973 25.8596 19.2474 24.061C19.2733 23.1188 18.8642 22.9143 18.0078 22.9041C17.0865 22.8934 16.8081 23.2479 16.8312 24.1235C16.8768 25.8861 16.8622 27.6503 16.8408 29.414C16.8216 31.0076 16.1038 31.7497 14.6466 31.7485C13.1894 31.7474 12.4721 31.0216 12.4439 29.4225C12.4135 27.6594 12.4073 25.2764 12.449 23.5144C12.4699 22.6399 12.1847 22.2747 11.2657 22.2849C10.3985 22.295 10.0215 22.5441 10.0379 23.4682C10.0818 25.9813 10.0531 29.1143 10.0531 31.7626" fill="#24A6E8"/>
+                </svg>
+            </div>
+        </div>
+
+        <p id="instructionText" class="instruction">
+            Drag and drop pieces to complete the puzzle
+        </p>
+        
+        <div class="footer">
+            <p class="footer-text">Learn more about comprehensive financial planning</p>
+            <a href="https://wealthwallet.ch" target="_blank" class="footer-link">
+                Visit WealthWallet.ch →
+            </a>
+        </div>
+    </div>
+
+    <script>
+        const icons = {
+            coins: '<svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5"><circle cx="8" cy="8" r="6"/><path d="M18.09 10.37A6 6 0 1 1 10.34 18"/><path d="M7 6h1v4"/><path d="m16.71 13.88.7.71-2.82 2.82"/></svg>',
+            piggyBank: '<svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5"><path d="M19 5c-1.5 0-2.8 1.4-3 2-3.5-1.5-11-.3-11 5 0 1.8 0 3 2 4.5V20h4v-2h3v2h4v-4c1-.5 1.5-1 2-2h2v-4h-2c0-1-.5-1.5-1-2h0V5z"/><path d="M2 9v1c0 1.1.9 2 2 2h1"/><path d="M16 11h0"/></svg>',
+            umbrella: '<svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5"><path d="M22 12a10.06 10.06 0 0 0-20 0Z"/><path d="M12 12v8a2 2 0 0 0 4 0"/><path d="M12 2v1"/></svg>',
+            sprout: '<svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5"><path d="M7 20h10"/><path d="M10 20c5.5-2.5.8-6.4 3-10"/><path d="M9.5 9.4c1.1.8 1.8 2.2 2.3 3.7-2 .4-3.5.4-4.8-.3-1.2-.6-2.3-1.9-3-4.2 2.8-.5 4.4 0 5.5.8z"/><path d="M14.1 6a7 7 0 0 0-1.1 4c1.9-.1 3.3-.6 4.3-1.4 1-1 1.6-2.3 1.7-4.6-2.7.1-4 1-4.9 2z"/></svg>',
+            home: '<svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>',
+            briefcase: '<svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5"><rect width="20" height="14" x="2" y="7" rx="2" ry="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg>',
+            calendar: '<svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5"><rect width="18" height="18" x="3" y="4" rx="2" ry="2"/><line x1="16" x2="16" y1="2" y2="6"/><line x1="8" x2="8" y1="2" y2="6"/><line x1="3" x2="21" y1="10" y2="10"/></svg>',
+            castle: '<svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5"><path d="M2 20h20"/><path d="M10 18H6V6l4 2v10Z"/><path d="M14 18h4V6l-4 2v10Z"/><path d="M6 6l4-4 4 4 4-4v16"/></svg>'
+        };
+
+        const labels = ['Financials', 'Projection', 'Retirement', 'Investment', 'Mortgage Planning', 'Portfolio Management', 'Life Events', 'Wealth Planning'];
+        const iconKeys = ['coins', 'piggyBank', 'umbrella', 'sprout', 'home', 'briefcase', 'calendar', 'castle'];
+
+        let pieces = [];
+        let draggedPiece = null;
+        let isWon = false;
+        let isMobile = window.innerWidth <= 640;
+
+        const puzzleLayoutDesktop = [
+            { id: 0, correctSlot: 0, top: 'flat', right: 'out', bottom: 'in', left: 'flat' },
+            { id: 1, correctSlot: 1, top: 'flat', right: 'in', bottom: 'out', left: 'in' },
+            { id: 2, correctSlot: 2, top: 'flat', right: 'out', bottom: 'in', left: 'out' },
+            { id: 3, correctSlot: 3, top: 'flat', right: 'flat', bottom: 'out', left: 'in' },
+            { id: 4, correctSlot: 4, top: 'out', right: 'in', bottom: 'flat', left: 'flat' },
+            { id: 5, correctSlot: 5, top: 'in', right: 'out', bottom: 'flat', left: 'out' },
+            { id: 6, correctSlot: 6, top: 'out', right: 'in', bottom: 'flat', left: 'in' },
+            { id: 7, correctSlot: 7, top: 'in', right: 'flat', bottom: 'flat', left: 'out' }
+        ];
+
+        const puzzleLayoutMobile = [
+            { id: 0, correctSlot: 0, top: 'flat', right: 'out', bottom: 'in', left: 'flat' },
+            { id: 1, correctSlot: 1, top: 'flat', right: 'flat', bottom: 'out', left: 'in' },
+            { id: 2, correctSlot: 2, top: 'out', right: 'in', bottom: 'in', left: 'flat' },
+            { id: 3, correctSlot: 3, top: 'in', right: 'flat', bottom: 'out', left: 'out' },
+            { id: 4, correctSlot: 4, top: 'out', right: 'out', bottom: 'in', left: 'flat' },
+            { id: 5, correctSlot: 5, top: 'in', right: 'flat', bottom: 'out', left: 'in' },
+            { id: 6, correctSlot: 6, top: 'out', right: 'in', bottom: 'flat', left: 'flat' },
+            { id: 7, correctSlot: 7, top: 'in', right: 'flat', bottom: 'flat', left: 'out' }
+        ];
+
+        function getPuzzleLayout() {
+            return isMobile ? puzzleLayoutMobile : puzzleLayoutDesktop;
+        }
+
+        function getPuzzlePath(piece) {
+            const w = 100, h = 100, nub = 15;
+            let path = 'M 0 0';
+            
+            if (piece.top === 'out') path += ` L ${w/2 - nub} 0 Q ${w/2 - nub} ${-nub} ${w/2} ${-nub} Q ${w/2 + nub} ${-nub} ${w/2 + nub} 0`;
+            else if (piece.top === 'in') path += ` L ${w/2 - nub} 0 Q ${w/2 - nub} ${nub} ${w/2} ${nub} Q ${w/2 + nub} ${nub} ${w/2 + nub} 0`;
+            path += ` L ${w} 0`;
+            
+            if (piece.right === 'out') path += ` L ${w} ${h/2 - nub} Q ${w + nub} ${h/2 - nub} ${w + nub} ${h/2} Q ${w + nub} ${h/2 + nub} ${w} ${h/2 + nub}`;
+            else if (piece.right === 'in') path += ` L ${w} ${h/2 - nub} Q ${w - nub} ${h/2 - nub} ${w - nub} ${h/2} Q ${w - nub} ${h/2 + nub} ${w} ${h/2 + nub}`;
+            path += ` L ${w} ${h}`;
+            
+            if (piece.bottom === 'out') path += ` L ${w/2 + nub} ${h} Q ${w/2 + nub} ${h + nub} ${w/2} ${h + nub} Q ${w/2 - nub} ${h + nub} ${w/2 - nub} ${h}`;
+            else if (piece.bottom === 'in') path += ` L ${w/2 + nub} ${h} Q ${w/2 + nub} ${h - nub} ${w/2} ${h - nub} Q ${w/2 - nub} ${h - nub} ${w/2 - nub} ${h}`;
+            path += ` L 0 ${h}`;
+            
+            if (piece.left === 'out') path += ` L 0 ${h/2 + nub} Q ${-nub} ${h/2 + nub} ${-nub} ${h/2} Q ${-nub} ${h/2 - nub} 0 ${h/2 - nub}`;
+            else if (piece.left === 'in') path += ` L 0 ${h/2 + nub} Q ${nub} ${h/2 + nub} ${nub} ${h/2} Q ${nub} ${h/2 - nub} 0 ${h/2 - nub}`;
+            path += ' Z';
+            
+            return path;
+        }
+
+        function getSlotPosition(slotId) {
+            if (isMobile) {
+                const row = Math.floor(slotId / 2);
+                const col = slotId % 2;
+                return { left: col * 120 + 20, top: row * 120 + 20 };
+            } else {
+                const row = Math.floor(slotId / 4);
+                const col = slotId % 4;
+                return { left: col * 120 + 20, top: row * 120 + 20 };
+            }
+        }
+
+        function shufflePuzzle() {
+            const layout = getPuzzleLayout();
+            const shuffled = [...layout].sort(() => Math.random() - 0.5);
+            pieces = shuffled.map((piece, idx) => ({ ...piece, currentSlot: idx }));
+            isWon = false;
+            document.getElementById('winMessage').classList.remove('show');
+            document.getElementById('instructionText').textContent = 'Drag and drop pieces to complete the puzzle';
+            renderPuzzle();
+        }
+
+        function checkWin() {
+            const won = pieces.every(piece => piece.id === piece.currentSlot);
+            if (won && !isWon) {
+                isWon = true;
+                document.getElementById('winMessage').classList.add('show');
+                document.getElementById('instructionText').textContent = 'Great job! The Wealth Wallet logo is revealed!';
+                
+                document.getElementById('puzzleArea').classList.add('fade-out');
+                document.getElementById('logoReveal').classList.add('fade-in');
+            }
+        }
+
+        function renderPuzzle() {
+            const puzzleArea = document.getElementById('puzzleArea');
+            if (!puzzleArea) return;
+            
+            puzzleArea.innerHTML = '';
+            puzzleArea.classList.remove('fade-out');
+            
+            const logoReveal = document.getElementById('logoReveal');
+            if (logoReveal) {
+                logoReveal.classList.remove('fade-in');
+                logoReveal.style.opacity = '0';
+            }
+            
+            if (isMobile) {
+                puzzleArea.style.width = '280px';
+                puzzleArea.style.height = '520px';
+            } else {
+                puzzleArea.style.width = '520px';
+                puzzleArea.style.height = '280px';
+            }
+            
+            for (let slotId = 0; slotId < 8; slotId++) {
+                const piece = pieces.find(p => p && p.currentSlot === slotId);
+                const pos = getSlotPosition(slotId);
+                
+                const slotDiv = document.createElement('div');
+                slotDiv.className = 'slot';
+                slotDiv.style.left = pos.left + 'px';
+                slotDiv.style.top = pos.top + 'px';
+                slotDiv.dataset.slot = slotId;
+                
+                slotDiv.addEventListener('dragover', handleDragOver);
+                slotDiv.addEventListener('drop', handleDrop);
+                slotDiv.addEventListener('touchmove', handleTouchMove);
+                slotDiv.addEventListener('touchend', handleTouchEnd);
+                
+                if (piece) {
+                    const pieceDiv = document.createElement('div');
+                    pieceDiv.className = 'puzzle-piece piece-content';
+                    pieceDiv.draggable = true;
+                    pieceDiv.dataset.slot = slotId;
+                    
+                    pieceDiv.addEventListener('dragstart', handleDragStart);
+                    pieceDiv.addEventListener('touchstart', handleTouchStart);
+                    
+                    const colorStop1 = Math.floor(piece.id / 4) === 0 ? '#60A5FA' : '#1E40AF';
+                    const colorStop2 = Math.floor(piece.id / 4) === 0 ? '#3B82F6' : '#1E3A8A';
+                    
+                    pieceDiv.innerHTML = `
+                        <svg width="130" height="130" viewBox="-15 -15 130 130" style="filter: drop-shadow(0 4px 6px rgba(0,0,0,0.1)); overflow: visible;">
+                            <defs>
+                                <linearGradient id="grad${piece.id}" x1="0%" y1="0%" x2="100%" y2="100%">
+                                    <stop offset="0%" style="stop-color:${colorStop1};stop-opacity:1" />
+                                    <stop offset="100%" style="stop-color:${colorStop2};stop-opacity:1" />
+                                </linearGradient>
+                            </defs>
+                            <path d="${getPuzzlePath(piece)}" fill="url(#grad${piece.id})" stroke="none"/>
+                        </svg>
+                        <div class="icon-container">
+                            ${icons[iconKeys[piece.id]]}
+                            <span class="icon-label">${labels[piece.id]}</span>
+                        </div>
+                    `;
+                    
+                    slotDiv.appendChild(pieceDiv);
+                }
+                
+                puzzleArea.appendChild(slotDiv);
+            }
+        }
+
+        let touchStartSlot = null;
+
+        function handleTouchStart(e) {
+            touchStartSlot = parseInt(e.currentTarget.dataset.slot);
+            e.currentTarget.style.opacity = '0.5';
+        }
+
+        function handleTouchMove(e) {
+            e.preventDefault();
+        }
+
+        function handleTouchEnd(e) {
+            e.preventDefault();
+            const touch = e.changedTouches[0];
+            const element = document.elementFromPoint(touch.clientX, touch.clientY);
+            const targetSlot = element?.closest('.slot')?.dataset.slot;
+            
+            if (touchStartSlot !== null && targetSlot !== undefined) {
+                handleSwap(touchStartSlot, parseInt(targetSlot));
+            }
+            
+            if (e.currentTarget) {
+                e.currentTarget.style.opacity = '1';
+            }
+            touchStartSlot = null;
+        }
+
+        function handleDragStart(e) {
+            draggedPiece = parseInt(e.currentTarget.dataset.slot);
+        }
+
+        function handleDragOver(e) {
+            e.preventDefault();
+        }
+
+        function handleDrop(e) {
+            e.preventDefault();
+            if (draggedPiece === null) return;
+            
+            const targetSlot = parseInt(e.currentTarget.dataset.slot);
+            handleSwap(draggedPiece, targetSlot);
+            draggedPiece = null;
+        }
+
+        function handleSwap(fromSlot, toSlot) {
+            if (isNaN(toSlot) || fromSlot === toSlot) return;
+            
+            const draggedIndex = pieces.findIndex(p => p.currentSlot === fromSlot);
+            const targetIndex = pieces.findIndex(p => p.currentSlot === toSlot);
+            
+            if (draggedIndex === -1 || targetIndex === -1) return;
+            
+            [pieces[draggedIndex].currentSlot, pieces[targetIndex].currentSlot] = 
+            [pieces[targetIndex].currentSlot, pieces[draggedIndex].currentSlot];
+            
+            renderPuzzle();
+            checkWin();
+        }
+
+        window.addEventListener('resize', () => {
+            const wasMobile = isMobile;
+            isMobile = window.innerWidth <= 640;
+            if (wasMobile !== isMobile) {
+                shufflePuzzle();
+            }
+        });
+
+        document.getElementById('shuffleBtn').addEventListener('click', shufflePuzzle);
+        
+        shufflePuzzle();
+    </script>
+</body>
+</html>
